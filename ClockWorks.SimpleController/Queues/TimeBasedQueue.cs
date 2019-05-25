@@ -46,6 +46,11 @@ namespace JVH.ClockWorks.SimpleController.Queues
 
         public SimpleJobDescription Next()
         {
+            if (jobs.Count == 0)
+            {
+                return null;
+            }
+
             var job = jobs.FirstOrDefault();
             if (job.Key <= DateTime.Now)
             {
@@ -58,7 +63,12 @@ namespace JVH.ClockWorks.SimpleController.Queues
 
         public SimpleJobDescription PeekNext()
         {
-            throw new NotImplementedException();
+            if (jobs.Count == 0)
+            {
+                return null;
+            }
+
+            return jobs.FirstOrDefault().Value;
         }
 
         private void AddJob(SimpleJobDescription jobDescription) => jobs.Add(jobDescription.NextExecutionTime, jobDescription);

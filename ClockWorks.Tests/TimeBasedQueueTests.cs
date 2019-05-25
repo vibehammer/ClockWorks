@@ -87,6 +87,27 @@ namespace ClockWorks.Tests
         }
 
         [Fact]
+        public void PeekDoesNotRemoveFromQueue()
+        {
+            // Arrange
+            var triggerTime = DateTime.Now.AddMilliseconds(50);
+            var stop = triggerTime.AddMilliseconds(20);
+            var job = CreateJob("42", triggerTime);
+            var queue = serviceProviderMock.GetService<ITimeBasedQueue>();
+
+            queue.AddEntry(job);
+
+            // Act
+            var result = queue.PeekNext();
+            var secondResult = queue.PeekNext();
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.NotNull(secondResult);
+            Assert.Equal(result, secondResult);
+        }
+
+        [Fact]
         public void WillGetJobWhenReady()
         {
             // Arrange
