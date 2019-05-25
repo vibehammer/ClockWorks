@@ -9,7 +9,9 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ClockWorks.Tests", "ClockWo
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ClockWorks.SimpleController", "ClockWorks.SimpleController\ClockWorks.SimpleController.csproj", "{D3226EFD-F633-4A4D-81B1-5A73987F652F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClockWorks.Core", "ClockWorks.Core\ClockWorks.Core.csproj", "{27ECE4DB-943B-43F8-BC1C-24E1CA739E86}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ClockWorks.Core", "ClockWorks.Core\ClockWorks.Core.csproj", "{27ECE4DB-943B-43F8-BC1C-24E1CA739E86}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ClockWorks.Engine", "ClockWorks.Engine\ClockWorks.Engine.csproj", "{D57B7E9D-AC0F-4042-99D7-0F1D8C09D6E0}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -33,6 +35,10 @@ Global
 		{27ECE4DB-943B-43F8-BC1C-24E1CA739E86}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{27ECE4DB-943B-43F8-BC1C-24E1CA739E86}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{27ECE4DB-943B-43F8-BC1C-24E1CA739E86}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D57B7E9D-AC0F-4042-99D7-0F1D8C09D6E0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D57B7E9D-AC0F-4042-99D7-0F1D8C09D6E0}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D57B7E9D-AC0F-4042-99D7-0F1D8C09D6E0}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D57B7E9D-AC0F-4042-99D7-0F1D8C09D6E0}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

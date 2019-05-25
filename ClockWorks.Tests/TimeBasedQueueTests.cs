@@ -64,42 +64,58 @@ namespace ClockWorks.Tests
         }
 
         [Fact]
-        public void CanAddTwoJobsAndRetrieveThem()
-        {
-            // Arrange
-            var job1 = CreateJob("42");
-            var job2 = CreateJob("43");
-            var queue = serviceProviderMock.GetService<ITimeBasedQueue>();
-
-            queue.AddEntry(job1);
-            queue.AddEntry(job2);
-
-            // Act
-            var jobs = new List<JobDescriptor> { queue.Next(), queue.Next() };
-
-            // Assert
-            jobs.Count.Should().Be(2, "There should be exactly two jobs");
-            jobs.Should().Contain(x => x.Identifier == "42", "The job with id = 42 is missing");
-            jobs.Should().Contain(x => x.Identifier == "43", "The job with id = 43 is missing");
-        }
-
-        [Fact]
         public void CanAddTwoJobsAndRetrieveThemInCorrectOrder()
         {
             // Arrange
-            var job1 = CreateJob("42", DateTime.Now.AddMinutes(10));
-            var job2 = CreateJob("43", DateTime.Now.AddMinutes(1));
+            var triggerTime1 = DateTime.Now.AddMilliseconds(100);
+            var triggerTime2 = DateTime.Now.AddMilliseconds(25);
+            var stop1 = triggerTime1.AddMilliseconds(20);
+            var stop2 = triggerTime2.AddMilliseconds(20);
+            var job1 = CreateJob("42", triggerTime1);
+            var job2 = CreateJob("43", triggerTime2);
             var queue = serviceProviderMock.GetService<ITimeBasedQueue>();
 
             queue.AddEntry(job1);
             queue.AddEntry(job2);
 
             // Act
-            var jobs = new JobDescriptor[2] { queue.Next(), queue.Next() };
+            var jobs = new JobDescriptor[2] { GetNextMessage(stop2, queue, out var actualStopMessage2), GetNextMessage(stop1, queue, out var actualStopMessage1) };
 
             // Assert
             jobs[0].Identifier.Should().Be("43", "Job with ID = 43 is set to start before the other job");
             jobs[1].Identifier.Should().Be("42", "Job with ID = 42 should be last.");
+        }
+
+        [Fact]
+        public void WillGetJobWhenReady()
+        {
+            // Arrange
+            var triggerTime = DateTime.Now.AddMilliseconds(50);
+            var stop = triggerTime.AddMilliseconds(20);
+            var job = CreateJob("42", triggerTime);
+            var queue = serviceProviderMock.GetService<ITimeBasedQueue>();
+
+            queue.AddEntry(job);
+
+            // Act
+            var result = GetNextMessage(stop, queue, out var actualStop);
+
+            // Assert
+            Assert.NotNull(result);
+            actualStop.Should().BeCloseTo(triggerTime, TimeSpan.FromMilliseconds(3));
+        }
+
+        private static JobDescriptor GetNextMessage(DateTime stop, ITimeBasedQueue queue, out DateTime actualStop)
+        {
+            JobDescriptor result = null;
+            actualStop = DateTime.MaxValue;
+            while (DateTime.Now < stop && result == null)
+            {
+                result = queue.Next();
+                actualStop = DateTime.Now;
+            }
+
+            return result;
         }
 
         #region Private Helpers

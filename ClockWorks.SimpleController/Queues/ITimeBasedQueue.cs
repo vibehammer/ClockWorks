@@ -6,5 +6,6 @@ namespace JVH.ClockWorks.SimpleController.Queues
     {
         void AddEntry(SimpleJobDescription simpleJobDescriptor);
         SimpleJobDescription Next();
+        SimpleJobDescription PeekNext();
     }
 }

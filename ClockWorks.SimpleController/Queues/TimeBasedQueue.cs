@@ -47,8 +47,18 @@ namespace JVH.ClockWorks.SimpleController.Queues
         public SimpleJobDescription Next()
         {
             var job = jobs.FirstOrDefault();
-            jobs.Remove(job.Key);
-            return job.Value;
+            if (job.Key <= DateTime.Now)
+            {
+                jobs.Remove(job.Key);
+                return job.Value;
+            }
+
+            return null;
+        }
+
+        public SimpleJobDescription PeekNext()
+        {
+            throw new NotImplementedException();
         }
 
         private void AddJob(SimpleJobDescription jobDescription) => jobs.Add(jobDescription.NextExecutionTime, jobDescription);
