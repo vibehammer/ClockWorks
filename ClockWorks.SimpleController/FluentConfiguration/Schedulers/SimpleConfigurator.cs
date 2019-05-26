@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using JVH.ClockWorks.Core.FluentConfiguration;
 using JVH.ClockWorks.SimpleController.FluentConfiguration.JobDescriptors;
 
 namespace JVH.ClockWorks.SimpleController.FluentConfiguration.Schedulers
@@ -39,6 +41,11 @@ namespace JVH.ClockWorks.SimpleController.FluentConfiguration.Schedulers
             Job = typeof(TJob);
             this.Identifier = identifier;
             return this;
+        }
+
+        public List<JobDescriptor> Configure(string configurationFile)
+        {
+            throw new NotImplementedException();
         }
     }
 }

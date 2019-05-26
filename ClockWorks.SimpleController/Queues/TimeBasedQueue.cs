@@ -34,14 +34,28 @@ namespace JVH.ClockWorks.SimpleController.Queues
 
         private static void CalculateNextExecutionTime(SimpleJobDescription jobDescription)
         {
-            var trigger = jobDescription.TriggerConfiguration as ExactStartTriggerDescription;
-
-            if (trigger == null)
+            if (jobDescription.TriggerConfiguration is ExactStartTriggerDescription)
+            {
+                var trigger = jobDescription.TriggerConfiguration as ExactStartTriggerDescription;
+                jobDescription.NextExecutionTime = trigger.ExactStartTime.AddMilliseconds(jobDescription.ActualExecutionCount * jobDescription.IntervalInMilliseconds);
+            }
+            else if (jobDescription.TriggerConfiguration is TimeOfDayTriggerDescription)
+            {
+                var now = DateTime.Now;
+                var trigger = jobDescription.TriggerConfiguration as TimeOfDayTriggerDescription;
+                if (now.Date.Add(trigger.TimeOfDay) < now)
+                {
+                    jobDescription.NextExecutionTime = now.Date.AddDays(1).Add(trigger.TimeOfDay);
+                }
+                else
+                {
+                    jobDescription.NextExecutionTime = now.Date.Add(trigger.TimeOfDay);
+                }
+            }
+            else
             {
                 throw new InvalidTriggerException("Only ExactStartTimeTriggerDescription types are allowed for time based queue");
             }
-
-            jobDescription.NextExecutionTime = trigger.ExactStartTime.AddMilliseconds(jobDescription.ActualExecutionCount * jobDescription.IntervalInMilliseconds);
         }
 
         public SimpleJobDescription Next()

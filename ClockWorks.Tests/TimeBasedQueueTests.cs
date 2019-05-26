@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using Xunit;
 using Microsoft.Extensions.DependencyInjection;
 using FluentAssertions;
@@ -27,7 +28,7 @@ namespace ClockWorks.Tests
         public void CanAddJob()
         {
             // Arrange
-            var jobDescription = CreateJob("42");
+            var jobDescription = CreateJobWithExactStartTime("42");
             var queue = serviceProviderMock.GetService<ITimeBasedQueue>();
 
             // act
@@ -52,8 +53,8 @@ namespace ClockWorks.Tests
         public void CanAddTwoJobs()
         {
             // Arrange
-            var job1 = CreateJob("42");
-            var job2 = CreateJob("43");
+            var job1 = CreateJobWithExactStartTime("42");
+            var job2 = CreateJobWithExactStartTime("43");
             var queue = serviceProviderMock.GetService<ITimeBasedQueue>();
 
             // Act
@@ -71,8 +72,8 @@ namespace ClockWorks.Tests
             var triggerTime2 = DateTime.Now.AddMilliseconds(25);
             var stop1 = triggerTime1.AddMilliseconds(20);
             var stop2 = triggerTime2.AddMilliseconds(20);
-            var job1 = CreateJob("42", triggerTime1);
-            var job2 = CreateJob("43", triggerTime2);
+            var job1 = CreateJobWithExactStartTime("42", triggerTime1);
+            var job2 = CreateJobWithExactStartTime("43", triggerTime2);
             var queue = serviceProviderMock.GetService<ITimeBasedQueue>();
 
             queue.AddEntry(job1);
@@ -92,7 +93,7 @@ namespace ClockWorks.Tests
             // Arrange
             var triggerTime = DateTime.Now.AddMilliseconds(50);
             var stop = triggerTime.AddMilliseconds(20);
-            var job = CreateJob("42", triggerTime);
+            var job = CreateJobWithExactStartTime("42", triggerTime);
             var queue = serviceProviderMock.GetService<ITimeBasedQueue>();
 
             queue.AddEntry(job);
@@ -113,7 +114,7 @@ namespace ClockWorks.Tests
             // Arrange
             var triggerTime = DateTime.Now.AddMilliseconds(50);
             var stop = triggerTime.AddMilliseconds(20);
-            var job = CreateJob("42", triggerTime);
+            var job = CreateJobWithExactStartTime("42", triggerTime);
             var queue = serviceProviderMock.GetService<ITimeBasedQueue>();
 
             queue.AddEntry(job);
@@ -126,14 +127,49 @@ namespace ClockWorks.Tests
             actualStop.Should().BeCloseTo(triggerTime, TimeSpan.FromMilliseconds(3));
         }
 
+        [Fact]
+        public void TimeOfDayTriggerIsScheduledCorrect()
+        {
+            EnsureValidDateForTest();
+
+            // Arrange
+            var now = DateTime.Now;
+            var triggerTime = new DateTime(now.Year, now.Month, now.Day, now.Hour, now.Minute, now.Second).AddSeconds(1);
+            var time = new TimeSpan(triggerTime.Hour, triggerTime.Minute, triggerTime.Second);
+            var stop = triggerTime.AddMilliseconds(2000);
+            var job = CreateJobWithTimeOfDay("42", time);
+            var queue = serviceProviderMock.GetService<ITimeBasedQueue>();
+
+            queue.AddEntry(job);
+
+            // Act
+            var result = GetNextMessage(stop, queue, out var actualStop);
+
+            // Assert
+            Assert.NotNull(result);
+            actualStop.Should().BeCloseTo(triggerTime, TimeSpan.FromMilliseconds(3));
+        }
+
+        private static void EnsureValidDateForTest()
+        {
+            if (DateTime.Now.AddSeconds(10).Date != DateTime.Now.Date)
+            {
+                // Waiting for 11 seconds to move the test into tomorrow
+                Thread.Sleep(11000);
+            }
+        }
+
         private static JobDescriptor GetNextMessage(DateTime stop, ITimeBasedQueue queue, out DateTime actualStop)
         {
             JobDescriptor result = null;
             actualStop = DateTime.MaxValue;
+            int count = 0;
             while (DateTime.Now < stop && result == null)
             {
                 result = queue.Next();
                 actualStop = DateTime.Now;
+                count++;
+                Thread.Yield();
             }
 
             return result;
@@ -141,7 +177,7 @@ namespace ClockWorks.Tests
 
         #region Private Helpers
 
-        private SimpleJobDescription CreateJob(string id)
+        private SimpleJobDescription CreateJobWithExactStartTime(string id)
         {
             var configurator = serviceProviderMock.GetService<ISimpleConfigurator>();
             return configurator
@@ -154,7 +190,7 @@ namespace ClockWorks.Tests
                 .Build();
         }
 
-        private SimpleJobDescription CreateJob(string id, DateTime startTime)
+        private SimpleJobDescription CreateJobWithExactStartTime(string id, DateTime startTime)
         {
             var configurator = serviceProviderMock.GetService<ISimpleConfigurator>();
             return configurator
@@ -167,6 +203,18 @@ namespace ClockWorks.Tests
                 .Build();
         }
 
+        private SimpleJobDescription CreateJobWithTimeOfDay(string id, TimeSpan timeOfDay)
+        {
+            var configurator = serviceProviderMock.GetService<ISimpleConfigurator>();
+            return configurator
+                .SetJobType<TestJob>(id)
+                .ConfigureRepetition()
+                .ExecuteInfinitly()
+                .WithIntervalInHours(1)
+                .ConfigureTrigger()
+                .AtTimeOfDay(timeOfDay.Hours, timeOfDay.Minutes, timeOfDay.Seconds)
+                .Build();
+        }
         #endregion
 
     }

@@ -12,7 +12,8 @@ namespace JVH.ClockWorks.SimpleController.FluentConfiguration
             Unknown = 0,
             Delayed,
             JobFinished,
-            ExactTime
+            ExactTime,
+            TimeOfDay
         }
 
         private readonly ISimpleConfigurator simpleConfigurator;
@@ -27,6 +28,14 @@ namespace JVH.ClockWorks.SimpleController.FluentConfiguration
         public bool OnlyIfSuccessfull { get; set; }
         public DateTime ExactStartTime { get; set; }
         public TimeSpan DelayedExecution { get; set; }
+        public TimeSpan TimeOfDay { get; set; }
+
+        public ISimpleConfigurator AtTimeOfDay(int hour, int minute, int second)
+        {
+            TimeOfDay = new TimeSpan(hour, minute, second);
+            triggerType = TriggerType.TimeOfDay;
+            return simpleConfigurator;
+        }
 
         public ISimpleConfigurator WithDelayedStart(TimeSpan timeToStart)
         {
@@ -69,11 +78,18 @@ namespace JVH.ClockWorks.SimpleController.FluentConfiguration
                     {
                         ExactStartTime = this.ExactStartTime
                     };
+
                 case TriggerType.JobFinished:
                     return new JobFinishedTriggerDescription
                     {
                         JobId = this.JobId,
                         OnlyIfSuccessfull = this.OnlyIfSuccessfull
+                    };
+
+                case TriggerType.TimeOfDay:
+                    return new TimeOfDayTriggerDescription
+                    {
+                        TimeOfDay = this.TimeOfDay
                     };
                 default:
                     throw new Exception("Unknown trigger type specified");

@@ -1,8 +1,9 @@
-﻿using JVH.ClockWorks.SimpleController.FluentConfiguration.JobDescriptors;
+﻿using JVH.ClockWorks.Core.FluentConfiguration;
+using JVH.ClockWorks.SimpleController.FluentConfiguration.JobDescriptors;
 
 namespace JVH.ClockWorks.SimpleController.FluentConfiguration.Schedulers
 {
-    public interface ISimpleConfigurator
+    public interface ISimpleConfigurator : IPersistedConfigurationConfigurator
     {
         ITriggerConfiguration ConfigureTrigger();
         IRepeaterConfiguration ConfigureRepetition();
