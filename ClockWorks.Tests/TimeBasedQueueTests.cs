@@ -32,7 +32,7 @@ namespace ClockWorks.Tests
             var queue = serviceProviderMock.GetService<ITimeBasedQueue>();
 
             // act
-            queue.AddEntry(jobDescription);
+            queue.AddJob(jobDescription);
 
             // Assert
         }
@@ -58,8 +58,8 @@ namespace ClockWorks.Tests
             var queue = serviceProviderMock.GetService<ITimeBasedQueue>();
 
             // Act
-            queue.AddEntry(job1);
-            queue.AddEntry(job2);
+            queue.AddJob(job1);
+            queue.AddJob(job2);
             
             // Assert
         }
@@ -76,8 +76,8 @@ namespace ClockWorks.Tests
             var job2 = CreateJobWithExactStartTime("43", triggerTime2);
             var queue = serviceProviderMock.GetService<ITimeBasedQueue>();
 
-            queue.AddEntry(job1);
-            queue.AddEntry(job2);
+            queue.AddJob(job1);
+            queue.AddJob(job2);
 
             // Act
             var jobs = new JobDescriptor[2] { GetNextMessage(stop2, queue, out var actualStopMessage2), GetNextMessage(stop1, queue, out var actualStopMessage1) };
@@ -96,7 +96,7 @@ namespace ClockWorks.Tests
             var job = CreateJobWithExactStartTime("42", triggerTime);
             var queue = serviceProviderMock.GetService<ITimeBasedQueue>();
 
-            queue.AddEntry(job);
+            queue.AddJob(job);
 
             // Act
             var result = queue.PeekNext();
@@ -117,7 +117,7 @@ namespace ClockWorks.Tests
             var job = CreateJobWithExactStartTime("42", triggerTime);
             var queue = serviceProviderMock.GetService<ITimeBasedQueue>();
 
-            queue.AddEntry(job);
+            queue.AddJob(job);
 
             // Act
             var result = GetNextMessage(stop, queue, out var actualStop);
@@ -140,7 +140,7 @@ namespace ClockWorks.Tests
             var job = CreateJobWithTimeOfDay("42", time);
             var queue = serviceProviderMock.GetService<ITimeBasedQueue>();
 
-            queue.AddEntry(job);
+            queue.AddJob(job);
 
             // Act
             var result = GetNextMessage(stop, queue, out var actualStop);

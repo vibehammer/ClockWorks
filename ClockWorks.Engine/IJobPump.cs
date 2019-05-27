@@ -1,4 +1,6 @@
-﻿namespace JVH.ClockWorks.Engine
+﻿using System.Threading.Tasks;
+
+namespace JVH.ClockWorks.Engine
 {
     public interface IJobPump
     {

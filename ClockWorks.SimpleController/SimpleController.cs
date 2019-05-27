@@ -34,7 +34,7 @@ namespace JVH.ClockWorks.SimpleController
         {
             if (jobDescriptor.TriggerConfiguration is ExactStartTriggerDescription)
             {
-                timeBasedQueue.AddEntry(jobDescriptor);
+                timeBasedQueue.AddJob(jobDescriptor);
             }
             else if (jobDescriptor.TriggerConfiguration is JobFinishedTriggerDescription)
             {

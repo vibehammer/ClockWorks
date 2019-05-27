@@ -8,10 +8,6 @@ namespace JVH.ClockWorks.SimpleController.Queues
     {
         private readonly Dictionary<string, List<SimpleJobDescription>> triggers = new Dictionary<string, List<SimpleJobDescription>>();
 
-        public JobTriggeringQueue()
-        {
-        }
-
         public void AddJob(SimpleJobDescription jobDescription)
         {
             throw new NotImplementedException();
@@ -23,6 +19,16 @@ namespace JVH.ClockWorks.SimpleController.Queues
         }
 
         public void RemoveJob(SimpleJobDescription jobDescription)
+        {
+            throw new NotImplementedException();
+        }
+
+        public SimpleJobDescription Next()
+        {
+            throw new NotImplementedException();
+        }
+
+        public SimpleJobDescription PeekNext()
         {
             throw new NotImplementedException();
         }

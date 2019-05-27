@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using JVH.ClockWorks.Core.JobQueues;
 using JVH.ClockWorks.SimpleController.FluentConfiguration.JobDescriptors;
 using JVH.ClockWorks.SimpleController.FluentConfiguration.TriggerDescriptions;
 
@@ -10,7 +11,7 @@ namespace JVH.ClockWorks.SimpleController.Queues
     {
         private SortedList<DateTime, SimpleJobDescription> jobs = new SortedList<DateTime, SimpleJobDescription>();
 
-        public void AddEntry(SimpleJobDescription jobDescription)
+        public void AddJob(SimpleJobDescription jobDescription)
         {
             if (jobDescription == null)
             {
@@ -21,7 +22,12 @@ namespace JVH.ClockWorks.SimpleController.Queues
 
             VerifyValidExecutionTime(jobDescription);
 
-            AddJob(jobDescription);
+            AddEntry(jobDescription);
+        }
+
+        public void RemoveJob(SimpleJobDescription jobDescription)
+        {
+            throw new NotImplementedException();
         }
 
         private static void VerifyValidExecutionTime(SimpleJobDescription jobDescription)
@@ -85,6 +91,6 @@ namespace JVH.ClockWorks.SimpleController.Queues
             return jobs.FirstOrDefault().Value;
         }
 
-        private void AddJob(SimpleJobDescription jobDescription) => jobs.Add(jobDescription.NextExecutionTime, jobDescription);
+        private void AddEntry(SimpleJobDescription jobDescription) => jobs.Add(jobDescription.NextExecutionTime, jobDescription);
     }
 }
