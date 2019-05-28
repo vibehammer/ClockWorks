@@ -22,6 +22,8 @@ namespace ClockWorks.Tests
             {
                 serviceCollection.AddClockWorks();
             });
+
+            EnsureValidDateForTest();
         }
 
         [Fact]
@@ -130,8 +132,6 @@ namespace ClockWorks.Tests
         [Fact]
         public void TimeOfDayTriggerIsScheduledCorrect()
         {
-            EnsureValidDateForTest();
-
             // Arrange
             var now = DateTime.Now;
             var triggerTime = new DateTime(now.Year, now.Month, now.Day, now.Hour, now.Minute, now.Second).AddSeconds(1);
@@ -150,6 +150,28 @@ namespace ClockWorks.Tests
             actualStop.Should().BeCloseTo(triggerTime, TimeSpan.FromMilliseconds(3));
         }
 
+        [Fact]
+        public void JobIsRescheduledOnceReturnedByNext()
+        {
+            // Arrange
+            var triggerTime = DateTime.Now.AddMilliseconds(50);
+            var stop = triggerTime.AddMilliseconds(20);
+            var job = CreateJobWithExactStartTime("42", triggerTime);
+            var queue = serviceProviderMock.GetService<ITimeBasedQueue>();
+
+            queue.AddJob(job);
+            var firstJob = GetNextMessage(stop, queue, out var actualStop) as SimpleJobDescription;
+
+            // Act
+            var nextJob = queue.PeekNext();
+
+            // Assert
+            Assert.NotNull(firstJob);
+            actualStop.Should().BeCloseTo(triggerTime, TimeSpan.FromMilliseconds(3));
+            Assert.NotNull(nextJob);
+            nextJob.NextExecutionTime.Should().BeAfter(firstJob.NextExecutionTime);
+
+        }
         private static void EnsureValidDateForTest()
         {
             if (DateTime.Now.AddSeconds(10).Date != DateTime.Now.Date)

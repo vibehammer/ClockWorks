@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using JVH.ClockWorks.Core.JobQueues;
+using JVH.ClockWorks.Core.TriggerDescriptions;
 using JVH.ClockWorks.SimpleController.FluentConfiguration.JobDescriptors;
 using JVH.ClockWorks.SimpleController.FluentConfiguration.TriggerDescriptions;
 
@@ -10,6 +11,7 @@ namespace JVH.ClockWorks.SimpleController.Queues
     internal class TimeBasedQueue : ITimeBasedQueue
     {
         private SortedList<DateTime, SimpleJobDescription> jobs = new SortedList<DateTime, SimpleJobDescription>();
+        private object lockOnThis = new object();
 
         public void AddJob(SimpleJobDescription jobDescription)
         {
@@ -18,7 +20,7 @@ namespace JVH.ClockWorks.SimpleController.Queues
                 throw new ArgumentNullException(nameof(jobDescription));
             }
 
-            CalculateNextExecutionTime(jobDescription);
+            CalculateFirstExecution(jobDescription);
 
             VerifyValidExecutionTime(jobDescription);
 
@@ -38,24 +40,46 @@ namespace JVH.ClockWorks.SimpleController.Queues
             }
         }
 
-        private static void CalculateNextExecutionTime(SimpleJobDescription jobDescription)
+        private static void CalculateFirstExecution(SimpleJobDescription jobDescription)
         {
-            if (jobDescription.TriggerConfiguration is ExactStartTriggerDescription)
+            if (jobDescription.TriggerType == TriggerType.ExactTime)
             {
-                var trigger = jobDescription.TriggerConfiguration as ExactStartTriggerDescription;
-                jobDescription.NextExecutionTime = trigger.ExactStartTime.AddMilliseconds(jobDescription.ActualExecutionCount * jobDescription.IntervalInMilliseconds);
+                jobDescription.NextExecutionTime = jobDescription.ExactStartTime.AddMilliseconds(jobDescription.ActualExecutionCount * jobDescription.IntervalInMilliseconds);
             }
-            else if (jobDescription.TriggerConfiguration is TimeOfDayTriggerDescription)
+            else if (jobDescription.TriggerType == TriggerType.TimeOfDay)
             {
                 var now = DateTime.Now;
-                var trigger = jobDescription.TriggerConfiguration as TimeOfDayTriggerDescription;
-                if (now.Date.Add(trigger.TimeOfDay) < now)
+                if (now.Date.Add(jobDescription.TimeOfDay) < now)
                 {
-                    jobDescription.NextExecutionTime = now.Date.AddDays(1).Add(trigger.TimeOfDay);
+                    jobDescription.NextExecutionTime = now.Date.AddDays(1).Add(jobDescription.TimeOfDay);
                 }
                 else
                 {
-                    jobDescription.NextExecutionTime = now.Date.Add(trigger.TimeOfDay);
+                    jobDescription.NextExecutionTime = now.Date.Add(jobDescription.TimeOfDay);
+                }
+            }
+            else
+            {
+                throw new InvalidTriggerException("Only ExactStartTimeTriggerDescription types are allowed for time based queue");
+            }
+        }
+
+        private static void CalculateNextExecutionTime(SimpleJobDescription jobDescription)
+        {
+            if (jobDescription.TriggerType == TriggerType.ExactTime)
+            {
+                jobDescription.NextExecutionTime = jobDescription.NextExecutionTime.AddMilliseconds(jobDescription.IntervalInMilliseconds);
+            }
+            else if (jobDescription.TriggerType == TriggerType.TimeOfDay)
+            {
+                var now = DateTime.Now;
+                if (now.Date.Add(jobDescription.TimeOfDay) < now)
+                {
+                    jobDescription.NextExecutionTime = now.Date.AddDays(1).Add(jobDescription.TimeOfDay);
+                }
+                else
+                {
+                    jobDescription.NextExecutionTime = now.Date.Add(jobDescription.TimeOfDay);
                 }
             }
             else
@@ -66,19 +90,25 @@ namespace JVH.ClockWorks.SimpleController.Queues
 
         public SimpleJobDescription Next()
         {
-            if (jobs.Count == 0)
+            lock (lockOnThis)
             {
+                if (jobs.Count == 0)
+                {
+                    return null;
+                }
+
+                var job = jobs.FirstOrDefault();
+                if (job.Key <= DateTime.Now)
+                {
+                    var nextJob = new SimpleJobDescription(job.Value);
+                    CalculateNextExecutionTime(nextJob);
+                    jobs.Remove(job.Key);
+                    jobs.Add(nextJob.NextExecutionTime, nextJob);
+                    return job.Value;
+                }
+
                 return null;
             }
-
-            var job = jobs.FirstOrDefault();
-            if (job.Key <= DateTime.Now)
-            {
-                jobs.Remove(job.Key);
-                return job.Value;
-            }
-
-            return null;
         }
 
         public SimpleJobDescription PeekNext()

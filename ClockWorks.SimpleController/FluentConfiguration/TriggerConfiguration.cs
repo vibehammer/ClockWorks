@@ -1,21 +1,13 @@
 ﻿using System;
 using JVH.ClockWorks.Core.TriggerDescriptions;
+using JVH.ClockWorks.SimpleController.FluentConfiguration.JobDescriptors;
 using JVH.ClockWorks.SimpleController.FluentConfiguration.Schedulers;
 using JVH.ClockWorks.SimpleController.FluentConfiguration.TriggerDescriptions;
 
 namespace JVH.ClockWorks.SimpleController.FluentConfiguration
 {
-    internal class TriggerConfiguration : ITriggerConfiguration
+    public class TriggerConfiguration : ITriggerConfiguration
     {
-        private enum TriggerType
-        {
-            Unknown = 0,
-            Delayed,
-            JobFinished,
-            ExactTime,
-            TimeOfDay
-        }
-
         private readonly ISimpleConfigurator simpleConfigurator;
         private TriggerType triggerType;
 
@@ -64,33 +56,32 @@ namespace JVH.ClockWorks.SimpleController.FluentConfiguration
             return simpleConfigurator;
         }
 
-        public TriggerDescription GetDescription()
+        public void GetDescription(SimpleJobDescription jobDescription)
         {
+            jobDescription.TriggerType = triggerType;
             switch (triggerType)
             {
                 case TriggerType.Delayed:
-                    return new ExactStartTriggerDescription
-                    {
-                        ExactStartTime = DateTime.Now.Add(this.DelayedExecution)
-                    };
+                    jobDescription.ExactStartTime = DateTime.Now.Add(this.DelayedExecution);
+                    jobDescription.TimeOfDay = default;
+                    jobDescription.SucceedesJobId = string.Empty;
+                    break;
                 case TriggerType.ExactTime:
-                    return new ExactStartTriggerDescription
-                    {
-                        ExactStartTime = this.ExactStartTime
-                    };
-
+                    jobDescription.ExactStartTime = ExactStartTime;
+                    jobDescription.TimeOfDay = default;
+                    jobDescription.SucceedesJobId = string.Empty;
+                    break;
                 case TriggerType.JobFinished:
-                    return new JobFinishedTriggerDescription
-                    {
-                        JobId = this.JobId,
-                        OnlyIfSuccessfull = this.OnlyIfSuccessfull
-                    };
-
+                    jobDescription.ExactStartTime = default;
+                    jobDescription.TimeOfDay = default;
+                    jobDescription.SucceedesJobId = JobId;
+                    jobDescription.SucceedsOnlyOnSuccess = OnlyIfSuccessfull;
+                    break;
                 case TriggerType.TimeOfDay:
-                    return new TimeOfDayTriggerDescription
-                    {
-                        TimeOfDay = this.TimeOfDay
-                    };
+                    jobDescription.ExactStartTime = default;
+                    jobDescription.TimeOfDay = TimeOfDay;
+                    jobDescription.SucceedesJobId = string.Empty;
+                    break;
                 default:
                     throw new Exception("Unknown trigger type specified");
             }

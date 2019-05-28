@@ -14,14 +14,15 @@ namespace JVH.ClockWorks.SimpleController.FluentConfiguration.Schedulers
 
         public SimpleJobDescription Build()
         {
-            return new SimpleJobDescription
+            var description = new SimpleJobDescription
             {
                 Identifier = this.Identifier,
                 Job = this.Job,
                 Repetition = this.Repetition.Repeat,
-                TriggerConfiguration = this.TriggerConfiguration.GetDescription(),
                 IntervalInMilliseconds = this.Repetition.IntervalConfiguration.Interval
             };
+            TriggerConfiguration.GetDescription(description);
+            return description;
         }
 
         public IRepeaterConfiguration ConfigureRepetition()

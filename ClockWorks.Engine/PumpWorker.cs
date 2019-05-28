@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using JVH.ClockWorks.Core.FluentConfiguration;
+using JVH.ClockWorks.Core.JobQueues;
 
 namespace JVH.ClockWorks.Engine
 {
-    internal class PumpWorker
+    internal abstract class PumpWorker
     {
         private bool started = false;
         private CancellationToken cancellationToken;
@@ -23,7 +25,7 @@ namespace JVH.ClockWorks.Engine
                 
                 started = true;
                 cancellationToken = new CancellationToken(false);
-                ThreadPool.QueueUserWorkItem(StartPumping, cancellationToken);
+                ThreadPool.QueueUserWorkItem(Pump, cancellationToken);
             }
         }
 
@@ -32,9 +34,6 @@ namespace JVH.ClockWorks.Engine
             throw new NotImplementedException();
         }
 
-        private void StartPumping(object state)
-        {
-
-        }
+        protected abstract void Pump(object state);
     }
 }

@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Threading.Tasks;
 using JVH.ClockWorks.Core.FluentConfiguration;
+using JVH.ClockWorks.Core.TriggerDescriptions;
+using JVH.ClockWorks.SimpleController.FluentConfiguration;
 using JVH.ClockWorks.SimpleController.FluentConfiguration.JobDescriptors;
 using JVH.ClockWorks.SimpleController.FluentConfiguration.TriggerDescriptions;
 using JVH.ClockWorks.SimpleController.Queues;
@@ -32,11 +34,11 @@ namespace JVH.ClockWorks.SimpleController
 
         public void ScheduleJob(SimpleJobDescription jobDescriptor)
         {
-            if (jobDescriptor.TriggerConfiguration is ExactStartTriggerDescription)
+            if (jobDescriptor.TriggerType == TriggerType.ExactTime)
             {
                 timeBasedQueue.AddJob(jobDescriptor);
             }
-            else if (jobDescriptor.TriggerConfiguration is JobFinishedTriggerDescription)
+            else if (jobDescriptor.TriggerType == TriggerType.JobFinished)
             {
                 jobTriggeringQueue.AddJob(jobDescriptor);
             }

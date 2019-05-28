@@ -1,30 +1,28 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
+﻿//using System;
+//using System.Collections.Generic;
+//using System.Text;
+//using System.Threading;
+//using System.Threading.Tasks;
 
-namespace JVH.ClockWorks.Engine
-{
-    internal class JobPump : IJobPump
-    {
-        private readonly PumpWorker worker = new PumpWorker();
-        private CancellationToken cancellationToken;
+//namespace JVH.ClockWorks.Engine
+//{
+//    internal class JobPump : IJobPump
+//    {
 
-        public void Start()
-        {
-            if (worker == null)
-            {
-                worker.StartPumping();
-            }
-        }
+//        public void Start()
+//        {
+//            if (worker == null)
+//            {
+//                worker.StartPumping();
+//            }
+//        }
 
-        public void Stop()
-        {
-            throw new NotImplementedException();
-        }
+//        public void Stop()
+//        {
+//            throw new NotImplementedException();
+//        }
 
 
 
-    }
-}
+//    }
+//}
